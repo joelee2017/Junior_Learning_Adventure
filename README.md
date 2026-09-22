@@ -8,7 +8,7 @@ https://joelee2017.github.io/Junior_Learning_Adventure/
 ## 目前版本
 
 - 版本：1.6
-- 更新日期：2026-09-10
+- 更新日期：2026-09-22
 - 主程式：單一 HTML 檔案
 - 適用裝置：Windows、macOS、平板與手機的現代瀏覽器
 
