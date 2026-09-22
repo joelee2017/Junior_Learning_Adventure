@@ -388,6 +388,38 @@
   }
   Object.entries(englishBanks).forEach(([level,bank])=>deepenEnglish(+level,bank));
 
+  // 小一國文／英文：文字輸入在實際使用上操作負擔較高，改為選擇題。
+  // 數學輸入題保留，因為數字計算本身就是被測能力。
+  function convertPrimaryLanguageInputs(){
+    const targets=questions.filter(q=>q.level<=3&&(q.subject==='chinese'||q.subject==='english')&&q.type==='input');
+    targets.forEach(q=>{
+      const correct=String(q.answers?.[0]??'');
+      if(!correct)return;
+      const pool=questions
+        .filter(x=>x!==q&&x.subject===q.subject&&x.level===q.level&&x.category===q.category&&x.type==='input')
+        .flatMap(x=>x.answers||[])
+        .map(String)
+        .filter(x=>x!==correct);
+      // 同類題不足時，再從同科同階段的其他輸入題補足干擾選項。
+      const fallback=questions
+        .filter(x=>x!==q&&x.subject===q.subject&&x.level===q.level&&x.type==='input')
+        .flatMap(x=>x.answers||[])
+        .map(String)
+        .filter(x=>x!==correct);
+      const distractors=[...new Set([...pool,...fallback])].slice(0,3);
+      if(distractors.length<3)return;
+      const choices=[correct,...distractors];
+      const shift=(Number(q.id.match(/-(\d+)$/)?.[1]||0)+q.level)%choices.length;
+      const rotated=choices.slice(shift).concat(choices.slice(0,shift));
+      q.type='choice';
+      q.choices=rotated;
+      q.answer=rotated.indexOf(correct);
+      delete q.answers;
+      delete q.placeholder;
+    });
+  }
+  convertPrimaryLanguageInputs();
+
   const app=document.getElementById('app'),quizNav=document.getElementById('quizNav');
   let route={view:'home'},session=null;
   function defaultState(){return {version:4,records:{},writingRecords:{},history:[],sessions:[],preferences:{levels:{chinese:1,math:1,english:1}},lastSubject:'chinese',createdAt:new Date().toISOString()};}
